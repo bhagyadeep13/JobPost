@@ -150,8 +150,8 @@ exports.postSignUp = [
   check('userType')
   .notEmpty() // ensure the field is not empty
   .withMessage('User type is required')
-  .isIn(['reader', 'author']) // check if the value is either 'host' or 'guest'
-  .withMessage('User type must be either reader or author')
+  .isIn(['Candidate', 'Recruiter']) // check if the value is either 'host' or 'guest'
+  .withMessage('User type must be either Candidate or Recruiter')
   .notEmpty(),// ensure the field is not empty
 
    check("confirmPassword")

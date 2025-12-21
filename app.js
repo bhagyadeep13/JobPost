@@ -115,7 +115,6 @@ app.use("/host", hostRouter);
 app.use(errorsController.pageNotFound);
 
 
-
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');
   app.listen(PORT, () => {

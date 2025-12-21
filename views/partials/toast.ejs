@@ -20,49 +20,104 @@
       }
     }
 
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+    }
+
     .animate-slide-down {
-      animation: slideDown 0.4s ease-out;
+      animation: slideDown 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
     .progress-bar-animate {
-      animation: shrinkBar 2s linear forwards;
+      animation: shrinkBar 3s linear forwards;
+    }
+
+    .toast-icon-pulse {
+      animation: pulse 2s ease-in-out infinite;
     }
   </style>
 
   <div id="toast"
-       class="fixed top-5 right-5 z-50 px-6 py-4 rounded-lg shadow-lg animate-slide-down overflow-hidden min-w-[250px] border border-gray-200 
-              <% if (toastMessage.type === 'success') { %> bg-green-50 text-white <% } %>
-              <% if (toastMessage.type === 'error') { %> bg-red-50 text-white <% } %>
-              <% if (toastMessage.type === 'info') { %> bg-blue-50 text-blue-500 <% } %>">
-    <div class="flex items-center justify-between">
-      <span class="text-black"><%= toastMessage.text %></span>
-      <button onclick="hideToast()" class="ml-4 text-black hover:text-black-300">
-        ✕
+       class="fixed top-6 right-6 z-50 px-6 py-5 rounded-2xl shadow-2xl animate-slide-down overflow-hidden min-w-[320px] border-2 backdrop-blur-sm
+              <% if (toastMessage.type === 'success') { %> bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 <% } %>
+              <% if (toastMessage.type === 'error') { %> bg-gradient-to-r from-red-50 to-pink-50 border-red-200 <% } %>
+              <% if (toastMessage.type === 'info') { %> bg-gradient-to-r from-cyan-50 to-blue-50 border-cyan-200 <% } %>">
+    <div class="flex items-start gap-4">
+      <!-- Icon -->
+      <div class="flex-shrink-0 toast-icon-pulse">
+        <% if (toastMessage.type === 'success') { %>
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        <% } %>
+        <% if (toastMessage.type === 'error') { %>
+          <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        <% } %>
+        <% if (toastMessage.type === 'info') { %>
+          <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 pt-1">
+        <p class="font-bold text-gray-900 mb-1">
+          <% if (toastMessage.type === 'success') { %>Success!<% } %>
+          <% if (toastMessage.type === 'error') { %>Error!<% } %>
+          <% if (toastMessage.type === 'info') { %>Info<% } %>
+        </p>
+        <p class="text-sm text-gray-700 font-medium leading-relaxed"><%= toastMessage.text %></p>
+      </div>
+
+      <!-- Close Button -->
+      <button onclick="hideToast()" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200 -mt-1">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
-    <div id="toast-progress"
-       class="h-1.5 w-full mt-2 progress-bar-animate
-       <% if (toastMessage.type === 'success') { %> bg-green-500 opacity-70 <% } %>
-       <% if (toastMessage.type === 'error') { %> bg-red-500 opacity-70 <% } %>
-       <% if (toastMessage.type === 'info') { %> bg-blue-500 opacity-60 <% } %>"></div>
+
+    <!-- Progress Bar -->
+    <div class="mt-4 h-1.5 w-full bg-gray-200/50 rounded-full overflow-hidden">
+      <div id="toast-progress"
+         class="h-full progress-bar-animate rounded-full
+         <% if (toastMessage.type === 'success') { %> bg-gradient-to-r from-green-500 to-emerald-600 <% } %>
+         <% if (toastMessage.type === 'error') { %> bg-gradient-to-r from-red-500 to-pink-600 <% } %>
+         <% if (toastMessage.type === 'info') { %> bg-gradient-to-r from-cyan-500 to-blue-600 <% } %>"></div>
     </div>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const toast = document.getElementById("toast");
       const progress = document.getElementById("toast-progress");
 
-      // Auto-hide after 2 seconds
+      // Auto-hide after 3 seconds
       setTimeout(() => {
         hideToast();
-      }, 2000);
+      }, 3000);
     });
 
     function hideToast() {
       const toast = document.getElementById("toast");
       if (toast) {
+        toast.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
+        toast.style.transform = 'translateX(400px)';
         setTimeout(() => toast.remove(), 500);
       }
     }

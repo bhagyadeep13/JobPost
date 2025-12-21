@@ -1,151 +1,167 @@
-const Home = require("../models/post");
+const Home = require("../models/post"); // new model
 const fs = require('fs');
 const User = require('../models/user');
-const { register } = require("module");
 
+// Render Add Job page
 exports.getAddPost = (req, res, next) => {
   res.render("host/details", {
-    pageTitle: "Add Home to airbnb",
+    pageTitle: "Add Job",
     currentPage: "AddNewPost",
     editing: false,
     IsLoggedIn : req.session.IsLoggedIn,
-    user: req.session.user
+    user: req.session.user,
+    toastMessage: null
   });
 };
 
-exports.getEditHome = (req, res, next) => {
-  const homeId = req.params.homeId;
-  const editing = req.query.editing === "true";
+// Render Edit Job page
+exports.getEditHome = async (req, res, next) => {
+  try {
+    const homeId = req.params.homeId; // still using homeId param for consistency
+    const editing = req.query.editing === "true";
 
-  Home.findById(homeId).then((home) => {
+    const home = await Home.findById(homeId);
     if (!home) {
-      console.log("Post not found for editing.");
+      console.log("Job not found for editing.");
       return res.redirect("/host/host-home-list");
     }
+
     res.render("host/details", {
-      home: home,
-      pageTitle: "Edit your Post",
+      home: job,
+      pageTitle: "Edit your Job",
       currentPage: "EditPost",
-      editing: editing, 
+      editing,
       IsLoggedIn : req.session.IsLoggedIn,
       user: req.session.user
     });
-  });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
 };
 
+// Render all Jobs for Host
 exports.getHostHomes = async (req, res, next) => {
-      const userId = req.session.user._id;
-      const toastMessage = req.session.toastMessage;
-      req.session.toastMessage = null; // Clear the toast message after rendering
-      const user = await User.findById(userId)
-      .populate('homes')
-      res.render("host/author-post-list", {
+  try {
+    const userId = req.session.user._id;
+    const toastMessage = req.session.toastMessage;
+    req.session.toastMessage = null;
+
+    const user = await User.findById(userId).populate('homes');
+
+    res.render("host/author-post-list", {
       registeredPosts: user.homes,
-      pageTitle: "Host Homes List",
-      toastMessage: toastMessage,
-      currentPage: "host-homes", 
+      pageTitle: "Host Jobs List",
+      toastMessage,
+      currentPage: "host-homes",
       IsLoggedIn : req.session.IsLoggedIn,
       user: req.session.user
     });
-    req.session.toastMessage = null; // Clear the toast message after rendering
-  };
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
 
+// Add new Job
 exports.postAddPost = async (req, res, next) => {
+  try {
+    const { jobTitle, companyName, jobDescription, location, salary, createdAt } = req.body;
 
-  const { title, subtitle,category, description, authorName, photo,createdAt} = req.body;
-
-  console.log(req.body);
-    if(!req.file) // Check if a file was uploaded
-    {
+    if(!req.file) {
       return res.status(400).send("Only image files are allowed.");
-      // You can also render an error page or redirect to an error route
     }
-    
-  const photo_path = req.file.path; // Get the filename from the uploaded file
-  const home = new Home({
-    title,
-    subtitle,
-    authorName,
-    category,
-    description,
-    photo: photo_path, // Use the path of the uploaded
-    createdAt,
-  });
-  console.log(home)
-  await home.save()
-    console.log("Home Saved successfully");
-    const userId2 = req.session.user._id; // Add created by field (user id) to home
-    console.log(userId2);
-    const homeId = home._id; // Use the _id of the newly created home
-    const user = await User.findById(userId2);
-    console.log("User: ", user, userId2); // Fetch user print only values of user
-    if (!user.homes.includes(homeId)) {
-        user.homes.push(homeId);
-        await user.save();
-    }
-    const toastMessage = {type: 'success', text: 'Post added successfully!.'};
-    req.session.toastMessage = toastMessage; // Store the toast message in the session
-    await req.session.save(); // Save the session to persist the message
-  res.redirect("/");
-};
 
-exports.postEditPost = async (req, res, next) => {
-  const { id,subtitle,title, authorName, category, createdAt, photo, description } =
-    req.body;
-    console.log(title, authorName, category, createdAt, description);
-  console.log(req.body);
-  const user = req.session.user;
-  console.log("User ID: ", user);
-    const post = await Home.findById(id);
-  if (post) {
-    post.title = title;
-    post.subtitle = subtitle;
-    post.authorName = authorName;
-    post.category = category;
-    post.createdAt = createdAt;
-    if(req.file) // Check if a new file was uploaded
-    {
-        fs.unlink(post.photo, (err) => {
-          if (err) {
-            console.error("Error deleting old photo:", err);
-          }
-        });
-      post.photo = req.file.path; // Update the photo with the new file
+    const photo_path = req.file.path;
+
+    const home = new Home({
+      jobTitle,
+      companyName,
+      jobDescription,
+      location,
+      salary,
+      photo: photo_path,
+      createdAt
+    });
+
+    await home.save();
+    console.log("Job saved successfully");
+
+    const userId = req.session.user._id;
+    const user = await User.findById(userId);
+
+    if (!user.homes.includes(home._id)) {
+      user.homes.push(home._id);
+      await user.save();
     }
-    post.description = description;
-    await post.save();
-    req.session.toastMessage = {type: 'info',
-                                text: 'Post Edited successfully!.'}
+
+    req.session.toastMessage = { type: 'success', text: 'Job added successfully!.' };
     await req.session.save();
-    console.log("Post updated successfully"); 
+
+    res.redirect("/");
+  } catch (err) {
+    console.error(err);
+    next(err);
   }
-  else
-  {
-    console.log("Post not found for editing.");
+};  
+
+// Edit Job
+exports.postEditPost = async (req, res, next) => {
+  try {
+    const { id, jobTitle, companyName, jobDescription, location, salary, createdAt } = req.body;
+
+    const job = await Job.findById(id);
+
+    if (!job) {
+      console.log("Job not found for editing.");
+      return res.redirect("/host/host-home-list");
+    }
+
+    home.jobTitle = jobTitle;
+    home.companyName = companyName;
+    home.jobDescription = jobDescription;
+    home.location = location;
+    home.salary = salary;
+    home.createdAt = createdAt;
+
+    if(req.file) {
+      fs.unlink(home.photo, (err) => {
+        if(err) console.error("Error deleting old photo:", err);
+      });
+      home.photo = req.file.path;
+    }
+
+    await home.save();
+
+    req.session.toastMessage = { type: 'info', text: 'Job edited successfully!.' };
+    await req.session.save();
+
+    res.redirect("/host/host-home-list");
+  } catch (err) { 
+    console.error(err);
+    next(err);
   }
-    res.redirect("/host/host-home-list",);
 };
 
+// Delete Job page
 exports.getDeletePost = async (req, res, next) => {
-      const userId = req.session.user._id;
-      const toastMessage = req.session.toastMessage;
-  req.session.toastMessage = null; // Clear the toast message after rendering
-  // Re-render the delete-post page with updated posts
-      const user = await User.findById(userId)
-    .populate('homes')
-    if(user)
-    {
+  try {
+    const userId = req.session.user._id;
+    const toastMessage = req.session.toastMessage;
+    req.session.toastMessage = null;
+
+    const user = await User.findById(userId).populate('homes');
+
+    if(user) {
       res.render("host/delete-post", {
-        registeredPosts: user.homes,
-        pageTitle: "Delete Post",
+        registeredPosts: user.homes ,
+        pageTitle: "Delete Job",
         currentPage: "DeletePost",
-        toastMessage: toastMessage,
+        toastMessage,
         IsLoggedIn : req.session.IsLoggedIn,
         user: req.session.user
       });
-    }
-    else
-    {
+    } else {
       res.render('404', {
         pageTitle: "Error",
         currentPage: "Error",
@@ -154,50 +170,38 @@ exports.getDeletePost = async (req, res, next) => {
         message: "User not found"
       });
     }
-}
+  } catch(err) {
+    console.error(err);
+    next(err);
+  }
+};
 
+// Delete Job
 exports.postDeletePost = async (req, res, next) => {
-  const postId = req.body.postId;
-  console.log("Came to delete ", postId);
+  try {
+    const postId = req.body.postId;
 
-  // Find the home first (to get the photo path)
-  const home = await Home.findById(postId);
-  if (!home) {
-    console.log("Post not found for deletion.");
-    res.status(404).send("Post not found");
-  }
+    const home = await Home.findById(postId);
+    if(!home) return res.status(404).send("Home not found");
 
-  // Delete the image file associated with this post
-  if (home && home.photo) {
-    fs.unlink(home.photo, (err) => {
-      if (err) {
-        console.error("Error deleting photo file:", err);
-      }
-    });
-  }
+    if(home.photo) {
+      fs.unlink(home.photo, (err) => {
+        if(err) console.error("Error deleting photo:", err);
+      });
+    }
 
-  // Delete the post from the database
-  await Home.findByIdAndDelete(postId);
-  console.log("Post deleted successfully");
+    await Home.findByIdAndDelete(postId);
 
-  // Remove the home from the user's homes array
-  const userId = req.session.user._id;
-  const user = await User.findById(userId).populate('homes');
-  if (user) {
-    user.homes = user.homes.filter(homeId => homeId.toString() !== postId);
+    const user = await User.findById(req.session.user._id);
+    user.homes = user.homes.filter(hId => hId.toString() !== postId);
     await user.save();
-    req.session.toastMessage = {type: 'error', text: 'Post deleted successfully!.'};
+
+    req.session.toastMessage = { type: 'error', text: 'Job deleted successfully!.' };
     await req.session.save();
+
+    res.redirect("/host/delete-post");
+  } catch(err) {
+    console.error(err);
+    next(err);
   }
-  const toastMessage = req.session.toastMessage;
-  req.session.toastMessage = null; // Clear the toast message after rendering
-  // Re-render the delete-post page with updated posts
-  res.render("host/delete-post", {
-    registeredPosts: user.homes,
-    pageTitle: "Delete Post",
-    currentPage: "DeletePost",
-    toastMessage: toastMessage,
-    IsLoggedIn: req.session.IsLoggedIn,
-    user: req.session.user
-  });
 };

@@ -20,21 +20,21 @@ const userSchema = mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['reader', 'author'],
-    default: 'author'
+    enum: ['', 'Candidate', 'Recruiter'],
+    default: 'Candidate'
   },
   favourites: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Home'
+    ref: 'Job'
   }],
   homes: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Home'
+    ref: 'Job'
   }]
 });
 
 userSchema.pre('save', function(next) {
-  if (this.userType !== 'author') {
+  if (this.userType !== 'Recruiter') {
     this.homes = [];
   }
   next();

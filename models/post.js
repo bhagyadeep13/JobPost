@@ -1,30 +1,29 @@
 const mongoose = require('mongoose');
 
-const homeSchema = mongoose.Schema({
-  title: {
+const jobSchema = mongoose.Schema({
+  jobTitle: {
     type: String,
     required: true
   },
-  subtitle: {
-    type: String,
-  },
-  authorName: {
+  companyName: {
     type: String,
     required: true
   },
-  category: {
+  jobDescription: {
     type: String,
-    enum: ['Technology', 'Education', 'Health', 'Lifestyle', 'Others']
+    required: true
   },
-  photo : String,
+  location: {
+    type: String,
+    required: true
+  },
+  salary: {
+    type: String,   // optional
+  },
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
-  description:{
-    type: String,
-    required: true
+    default: Date.now
   }
 });
 
-module.exports = mongoose.model('Home', homeSchema);
+module.exports = mongoose.model('Job', jobSchema);
