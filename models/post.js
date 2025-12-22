@@ -17,6 +17,7 @@ const jobSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  photo: String,
   salary: {
     type: String,   // optional
   },

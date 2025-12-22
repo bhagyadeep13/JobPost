@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Home = require("../models/post");
+const Application = require('../models/application');
 
 exports.getIndex = async (req, res, next) => {
   //console.log("session value",req.session)
@@ -11,8 +12,8 @@ exports.getIndex = async (req, res, next) => {
       res.render("store/index", 
       {
         registeredPosts: post,
-        pageTitle: "Index Page",
-        currentPage: "index", 
+        pageTitle: "ViewPost",
+        currentPage: "ViewPost", 
         toastMessage: toastMessage,
         IsLoggedIn : req.session.IsLoggedIn,
         user: req.session.user
@@ -33,9 +34,9 @@ exports.getIndex = async (req, res, next) => {
   }
   const userType = await user.userType;
   const post = await Home.findById(postId)
+  
     if (!post) {
-      console.log("Home not found");
-      res.redirect("/homes");
+      res.redirect("/");
     } else {
       res.render("store/post-detail", {
         home: post,
@@ -43,10 +44,25 @@ exports.getIndex = async (req, res, next) => {
         pageTitle: "Post Detail",
         currentPage: "post-detail", 
         IsLoggedIn : req.session.IsLoggedIn,
-        user: req.session.user
+        user: req.session.user,
+        toastMessage: req.session.toastMessage
       });
     }
   }
+
+exports.getDashboard = (req, res, next) => {
+  const user = req.session.user;
+  const userType = user ? user.userType : '';
+  res.render("store/dashboard", {
+    userType: userType,
+    userId: user ? user._id : null,
+    pageTitle: "Dashboard",
+    currentPage: "Dashboard",
+    IsLoggedIn : req.session.IsLoggedIn,
+    user: req.session.user,
+    toastMessage: null,
+  });
+};
 
 exports.getPostList = (req, res, next) => {
 
@@ -66,66 +82,72 @@ exports.getPostList = (req, res, next) => {
   });
 };
 
-exports.getFavouriteList = async (req, res, next) => 
-  {
-  const userId = req.session.user._id; // user ID is stored in session
-  const toastMessage = req.session.toastMessage;
-  req.session.toastMessage = null;
-  await req.session.save();
-  const user = await User.findById(userId)
-  .populate('favourites')
-  //console.log("User: ",await user); // Fetch user print only values of user
-  res.render("store/favourite-list", {
-    favouritePosts: user.favourites,
-    pageTitle: "Favourite Posts",
-    currentPage: "favourites", 
-    toastMessage: toastMessage,
-    IsLoggedIn : req.session.IsLoggedIn,
-    user: req.session.user
-})
-}
+exports.applyJob = async (req, res) => {
+  try {
+    const jobId = req.body.postId;
+    const userId = req.session.user._id;
 
-exports.postAddToFavourite = async (req, res, next) => {
+    // prevent duplicate application
+    const alreadyApplied = await Application.findOne({
+      candidate: userId,
+      job: jobId
+    });
 
-  const userId = req.session.user._id; // user ID is stored in session
-  const postId = req.body.postId; // home ID from the request parameters
+    if (alreadyApplied) {
+      console.log('error', 'You have already applied for this job.');
+      res.render('store/post-detail',
+        {
+          home: await Home.findById(jobId),
+          userType: req.session.user.userType,
+          pageTitle: "Post Detail", 
+          currentPage: "post-detail",
+          IsLoggedIn : req.session.IsLoggedIn,
+          user: req.session.user,
+          toastMessage: { type: 'error', text: 'You have already applied for this job.' }
+        });
+        }
+    else {
+    const application = new Application({
+      candidate: userId,
+      job: jobId,
+      status: 'applied',
+      appliedAt: Date.now()
+    });
+  
+    await application.save();
 
-  const user = await User.findById(userId);
-    console.log("User: ",user,postId); // Fetch user print only values of user
-     if (!user.favourites.includes(postId)) 
-      {
-        user.favourites.push(postId);
-        console.log("Post added to favourites successfully");
-        await user.save();
-        req.session.toastMessage = {type: 'success', text: 'Post added successfully!.'};
-        await req.session.save();
-      }
-      else
-      {
-        console.log("Post not added to favourites, already exists");
-      }
-    res.redirect("/favourites");
+    const user = await User.findById(userId);
+    user.jobsApplied.push(application._id);
+    await user.save();
+    
+    console.log('success', 'Job applied successfully');
+    req.session.toastMessage = { type: 'success', text: 'Job applied successfully!' };
+    await req.session.save();
+    res.redirect('/my-applications');
+    }
+  } catch (err) {
+    console.error(err);
+    res.send('An error occurred while applying for the job.');
+  }
 };
 
-exports.postRemoveFromFavourite = async (req, res, next) => {
-  const userId = req.session.user._id; // user ID is stored in session
-  const homeId = req.params.postId; // home ID from the request parameters
-  const user = await User.findById(userId);
-  console.log("User: ", user, homeId); // Fetch user print only values of user
-  if(!user)
-  {
-    console.log("User not found");
+exports.myApplications = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const applications = await Application.find({
+      candidate: userId
+    })
+    console.log(applications)
+    res.render('store/Myapplication', {
+      applications,
+      pageTitle: 'My Applications',
+      currentPage: 'my-applications',
+      IsLoggedIn : req.session.IsLoggedIn,
+      user: req.session.user,
+      toastMessage: req.session.toastMessage
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect('/');
   }
-  else
-  {
-    user.favourites = user.favourites.filter(
-      (favouriteId) => String(favouriteId) !== String(homeId)
-    );
-    console.log("Post removed from favourites successfully");
-    await user.save();
-  }
-  req.session.toastMessage = {type: 'success', text: 'Post removed successfully !.'};
-  await req.session.save();
-  res.redirect("/favourites");
-}
-
+};

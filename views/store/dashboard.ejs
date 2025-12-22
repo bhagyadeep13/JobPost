@@ -1,0 +1,120 @@
+<%- include('../partials/head') %>
+    </head>
+
+    <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen font-sans">
+        <%- include('../partials/nav') %>
+            <%- include('../partials/toast') %>
+
+                <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+                    <!-- Page Header -->
+                    <div class="max-w-6xl mx-auto mb-10 text-center">
+                        <h1
+                            class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+                            User Dashboard
+                        </h1>
+                        <p class="text-gray-600 mt-3 text-lg">
+                            View your profile and activity
+                        </p>
+                    </div>
+
+                    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <!-- Left Profile Card -->
+                        <div class="bg-white rounded-3xl shadow-xl p-8 text-center">
+                            <div class="flex justify-center mb-4">
+                                <div
+                                    class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                                    <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U' %>
+                                </div>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <%= user?.firstName || 'User' %>
+                                    <%= user?.lastName || '' %>
+                            </h2>
+
+                            <p class="text-gray-500 mt-1">
+                                <%= user?.email || 'No email available' %>
+                            </p>
+
+                            <span
+                                class="inline-block mt-4 px-4 py-2 bg-indigo-100 text-indigo-700 font-semibold rounded-full text-sm">
+                                <%= user?.role || 'Member' %>
+                            </span>
+                        </div>
+
+                        <!-- Right Content -->
+                        <div class="lg:col-span-2 space-y-8">
+
+                            <!-- Stats Section -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+                                <% if(userType==='Recruiter' ) { %>
+                                    <form action="/host/host-home-list" method="GET"
+                                        class="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl transition">
+                                        <button class="text-gray-600 font-semibold mt-2">Posts Created</button>
+                                    </form>
+                                    <% } else { %>
+                                        <button class="bg-white rounded-2xl shadow-md p-4 text-center hover:shadow-xl transition">
+                                        <a href="/my-applications"
+                                            class="flex items-center gap-2 px-10 rounded-xl transition-all duration-300 <%= currentPage === 'my-applications' ? 'bg-Black text-indigo-600 shadow-lg font-semibold' : 'text-Black hover:bg-white/20' %>">
+                                            Applied Jobs
+                                        </a>
+                                        </button>
+                                        <% } %>
+
+                            </div>
+
+                            <!-- Account Details -->
+                            <div class="bg-white rounded-3xl shadow-xl p-8">
+                                <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                                    Account Information
+                                </h3>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+                                    <div>
+                                        <p class="text-sm text-gray-500">First Name</p>
+                                        <p class="font-semibold">
+                                            <%= user?.firstName || 'N/A' %>
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-sm text-gray-500">Last Name</p>
+                                        <p class="font-semibold">
+                                            <%= user?.lastName || 'N/A' %>
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-sm text-gray-500">Email</p>
+                                        <p class="font-semibold">
+                                            <%= user?.email || 'N/A' %>
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-sm text-gray-500">Role</p>
+                                        <p class="font-semibold">
+                                            <%= user?.userType || 'User' %>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="mt-8 flex flex-wrap gap-4">
+                                    <a href="/logout"
+                                        class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold shadow-md hover:shadow-xl transition">
+                                        Logout
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </main>
+
+    </body>
+
+    </html>

@@ -1,6 +1,7 @@
 const Home = require("../models/post"); // new model
 const fs = require('fs');
 const User = require('../models/user');
+const { register } = require("module");
 
 // Render Add Job page
 exports.getAddPost = (req, res, next) => {
@@ -27,7 +28,7 @@ exports.getEditHome = async (req, res, next) => {
     }
 
     res.render("host/details", {
-      home: job,
+      job: home,
       pageTitle: "Edit your Job",
       currentPage: "EditPost",
       editing,
@@ -50,7 +51,7 @@ exports.getHostHomes = async (req, res, next) => {
     const user = await User.findById(userId).populate('homes');
 
     res.render("host/author-post-list", {
-      registeredPosts: user.homes,
+      jobs: user.homes,
       pageTitle: "Host Jobs List",
       toastMessage,
       currentPage: "host-homes",
@@ -68,10 +69,10 @@ exports.postAddPost = async (req, res, next) => {
   try {
     const { jobTitle, companyName, jobDescription, location, salary, createdAt } = req.body;
 
-    if(!req.file) {
+    if (!req.file) {
       return res.status(400).send("Only image files are allowed.");
     }
-
+    console.log("Uploaded file:", req.file);
     const photo_path = req.file.path;
 
     const home = new Home({
@@ -85,36 +86,47 @@ exports.postAddPost = async (req, res, next) => {
     });
 
     await home.save();
-    console.log("Job saved successfully");
 
     const userId = req.session.user._id;
     const user = await User.findById(userId);
-
+    console.log("User before adding home:", user+" "+userId);
     if (!user.homes.includes(home._id)) {
       user.homes.push(home._id);
       await user.save();
     }
 
-    req.session.toastMessage = { type: 'success', text: 'Job added successfully!.' };
+    // 🔥 IMPORTANT FIX: Fetch jobs as ARRAY
+    const registeredPosts = await Home.find().sort({ createdAt: -1 });
+
+    req.session.toastMessage = { type: 'success', text: 'Job added successfully!' };
     await req.session.save();
 
-    res.redirect("/");
+    res.render("store/index", {
+      registeredPosts,   // ✅ ARRAY
+      pageTitle: "Index Page",
+      currentPage: "index",
+      editing: false,
+      IsLoggedIn: req.session.IsLoggedIn,
+      user: req.session.user,
+      toastMessage: req.session.toastMessage
+    });
+
   } catch (err) {
     console.error(err);
-    next(err);
+    res.status(500).send("Server Error");
   }
-};  
+};
 
 // Edit Job
 exports.postEditPost = async (req, res, next) => {
   try {
     const { id, jobTitle, companyName, jobDescription, location, salary, createdAt } = req.body;
 
-    const job = await Job.findById(id);
+    const home = await Home.findById(id);
 
-    if (!job) {
+    if (!home) {
       console.log("Job not found for editing.");
-      return res.redirect("/host/host-home-list");
+      return res.redirect("");
     }
 
     home.jobTitle = jobTitle;

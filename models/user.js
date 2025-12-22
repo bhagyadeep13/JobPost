@@ -23,15 +23,15 @@ const userSchema = mongoose.Schema({
     enum: ['', 'Candidate', 'Recruiter'],
     default: 'Candidate'
   },
-  favourites: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job'
-  }],
   homes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Job'
+  }],
+  jobsApplied: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Application'
   }]
-});
+}); 
 
 userSchema.pre('save', function(next) {
   if (this.userType !== 'Recruiter') {
