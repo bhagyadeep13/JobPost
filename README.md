@@ -64,7 +64,7 @@ Each job application stores:
 
 ## Clone Repo
 ```
-git clone https://github.com/your-username/job-nest.git
+git clone https://github.com/bhagyadeep13/JobPost.git
 cd JobNest
 ```
 
