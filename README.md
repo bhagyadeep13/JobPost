@@ -60,10 +60,25 @@ Each job application stores:
 - **ORM:** Mongoose
 
 ---
-⚙️ Installation & Setup
-1️⃣ Clone Repo
-git clone https://github.com/your-username/job-nest.git
-cd job-nest
+## Installation 
 
-2️⃣ Install Dependencies
+## Clone Repo
+```
+git clone https://github.com/your-username/job-nest.git
+cd JobNest
+```
+
+## Install Dependencies
+```
 npm install
+```
+
+## Run Application
+```
+npm start
+```
+
+## Open localhost
+```
+http://localhost:3000
+```
