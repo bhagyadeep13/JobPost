@@ -1,42 +1,69 @@
-# BlogNest 📝
+# Job Nest
 
-[![Deploy on Render](https://img.shields.io/badge/Deploy%20on-Render-3f3f3f?logo=render&style=for-the-badge)](https://blognest-8.onrender.com)
-
-**BlogNest** is a full-stack blogging platform built with:
-
-- **Node.js**
-- **Express.js**
-- **EJS (Embedded JavaScript Templating)**
-- **MongoDB + Mongoose**
-- **Tailwind CSS**
-- **Multer** (for file uploads)
-- **express-session** + **connect-mongo** (for user session management)
+Job Nest is a full-stack web application that connects **candidates** and **recruiters** on a single platform.  
+Recruiters can post jobs, and candidates can browse and apply for jobs with a single click.  
+The platform supports authentication, role-based access, and job application tracking.
 
 ---
 
-## 🌐 Live Demo
+## 🚀 Features Implemented
 
-👉 [Click here](https://blognest-6.onrender.com)
+### 👤 User Authentication
+- User signup & login
+- Role-based registration:
+  - Candidate
+  - Recruiter
+- Secure authentication using sessions
+
+### 💼 Job Management (Recruiter)
+- Create job postings
+- View posted jobs
+- Job details include:
+  - Job title
+  - Company name
+  - Job description
+  - Location
+  - Salary (optional)
+
+### 📄 Job Browsing & Application (Candidate)
+- View available jobs
+- Single-click job application
+- Prevent duplicate applications
+- View all applied jobs
+
+### 🗂 Job Application System
+Each job application stores:
+- Candidate ID
+- Job ID
+- Application date
+- Status (`applied`)
+
+### 📊 Dashboard
+- Candidate dashboard:
+  - View applied jobs
+- Recruiter dashboard:
+  - View posted jobs
+
+### 🎨 UI & Templating
+- EJS templates
+- Tailwind CSS for modern UI
+- Responsive and clean design
 
 ---
 
-## ✨ Features
+## 🛠 Tech Stack
 
-- User Authentication (Register, Login, Logout)
-- Add and Manage Blog Posts
-- Upload Images with Posts (Multer)
-- Responsive UI with Tailwind CSS
-- Session-based authentication with MongoDB session store
-- Server-side rendering with EJS templates
-- Image hosting via Express static serving
-- Protected routes for authors
-- Error Handling pages
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB, Mongoose
+- **Frontend:** EJS, Tailwind CSS
+- **Authentication:** Express Sessions
+- **ORM:** Mongoose
 
 ---
+⚙️ Installation & Setup
+1️⃣ Clone Repo
+git clone https://github.com/your-username/job-nest.git
+cd job-nest
 
-## 🛠️ Installation
-
-```bash
-git clone <your-repo-url>
-cd blognest
+2️⃣ Install Dependencies
 npm install
